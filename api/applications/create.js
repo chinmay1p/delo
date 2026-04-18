@@ -1,4 +1,4 @@
-import pool from '../../lib/db.js';
+import pool from '../../lib/db';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,21 +6,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { jobId, candidateId, status } = req.body ?? {};
-
-    if (!jobId || !candidateId) {
-      return res.status(400).json({ error: 'jobId and candidateId are required' });
-    }
+    const { candidate_id, job_id } = req.body;
 
     const result = await pool.query(
-      `INSERT INTO applications (job_id, candidate_id, status)
-       VALUES ($1, $2, $3)
+      `INSERT INTO applications (candidate_id, job_id)
+       VALUES ($1, $2)
        RETURNING *`,
-      [Number(jobId), Number(candidateId), status ?? 'applied']
+      [candidate_id, job_id]
     );
 
-    return res.status(200).json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 }

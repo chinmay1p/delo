@@ -1,4 +1,4 @@
-import pool from '../../lib/db.js';
+import pool from '../../lib/db';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,21 +6,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, resumeUrl } = req.body ?? {};
+    const { name, email, phone, resume_url } = req.body;
 
-    if (typeof name !== 'string' || typeof email !== 'string') {
-      return res.status(400).json({ error: 'name and email are required' });
+    if (!resume_url) {
+      return res.status(400).json({ error: 'resume_url required' });
     }
 
     const result = await pool.query(
-      `INSERT INTO candidates (name, email, resume_url)
-       VALUES ($1, $2, $3)
+      `INSERT INTO candidates (name, email, phone, resume_url)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [name, email, resumeUrl ?? null]
+      [name, email, phone, resume_url]
     );
 
-    return res.status(200).json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 }
