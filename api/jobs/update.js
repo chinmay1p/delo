@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const id = Number(req.query.id ?? req.body?.id);
+    const id = req.query.id ?? req.body?.id;
     const { title, description } = req.body ?? {};
 
     if (!id) {
