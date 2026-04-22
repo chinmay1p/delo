@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Candidate not found' });
     }
 
-    return res.status(200).json(result.rows[0]?.resume_url || null);
+    return res.status(200).json({ url: result.rows[0]?.resume_url || null });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
