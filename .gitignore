@@ -2,3 +2,6 @@
 .vercel
 .env
 node_modules
+resumes
+scripts
+node_modules
