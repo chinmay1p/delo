@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const id = Number(req.query.id ?? req.body?.id);
+    const id = String(req.query.id ?? req.body?.id ?? '').trim();
     const { status } = req.body ?? {};
 
     if (!id) {

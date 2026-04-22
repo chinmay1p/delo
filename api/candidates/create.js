@@ -28,6 +28,34 @@ function normalizeCgpa(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function toNullableInt(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    return null;
+  }
+
+  return Number.isInteger(num) ? num : Math.trunc(num);
+}
+
+function toNullableBoolean(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  const str = String(value).trim().toLowerCase();
+  if (str === 'true' || str === '1' || str === 'yes') return true;
+  if (str === 'false' || str === '0' || str === 'no') return false;
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -44,6 +72,9 @@ export default async function handler(req, res) {
     const gender = toNullableString(body.gender);
     const cgpa = normalizeCgpa(body.cgpa);
     const resumeUrl = toNullableString(body.resume_url);
+    const experience = toNullableInt(body.experience);
+    const yearOfPassing = toNullableInt(body.year_of_passing);
+    const relocationAvailable = toNullableBoolean(body.relocation_available);
 
     if (!name || !email || !resumeUrl) {
       return res.status(400).json({ error: 'name, email and resume_url are required' });
@@ -51,8 +82,21 @@ export default async function handler(req, res) {
 
     const result = await pool.query(
       `INSERT INTO candidates 
-       (name, email, phone, college_name, education, stream, gender, cgpa, resume_url)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       (
+         name,
+         email,
+         phone,
+         college_name,
+         education,
+         stream,
+         gender,
+         cgpa,
+         resume_url,
+         experience,
+         year_of_passing,
+         relocation_available
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING *`,
       [
         name,
@@ -63,7 +107,10 @@ export default async function handler(req, res) {
         stream,
         gender,
         cgpa,
-        resumeUrl
+        resumeUrl,
+        experience,
+        yearOfPassing,
+        relocationAvailable,
       ]
     );
 

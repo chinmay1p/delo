@@ -5,3 +5,10 @@ node_modules
 resumes
 scripts
 node_modules
+cvs.json
+cvs.json
+JDs.txt
+tmp-verify-applications.mjs
+tmp-verify-candidates.mjs
+tmp-check-constraints.mjs
+tmp-check-constraints.cjs
