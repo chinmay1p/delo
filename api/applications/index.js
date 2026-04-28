@@ -30,34 +30,78 @@ function extractApplicationIds(items) {
   return [...new Set(ids)];
 }
 
+function normalizeStatus(rawStatus) {
+  const status = String(rawStatus ?? '').trim().toLowerCase();
+  if (status === 'approved') {
+    return 'shortlisted';
+  }
+  return status;
+}
+
+function extractApplicantsWithStatus(items, defaultStatus = null) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  const result = [];
+  for (const item of items) {
+    let id = null;
+    let status = defaultStatus;
+
+    if (typeof item === 'string' && item.trim()) {
+      id = item.trim();
+    } else if (item && typeof item === 'object') {
+      id = item.application_id ?? item.id;
+      if (typeof id === 'string') {
+        id = id.trim();
+      }
+      
+      if (item.status) {
+        status = normalizeStatus(item.status);
+      }
+    }
+
+    if (id && typeof id === 'string' && id.trim()) {
+      result.push({ id: id.trim(), status });
+    }
+  }
+
+  return result;
+}
+
 function buildBulkUpdates(body) {
   const updates = [];
 
   if (Array.isArray(body?.updates)) {
     for (const item of body.updates) {
       const id = String(item?.id ?? '').trim();
-      const status = String(item?.status ?? '').trim();
+      const status = normalizeStatus(item?.status ?? '');
       if (id && status) {
         updates.push({ id, status });
       }
     }
   }
 
-  const selectedApplicants = extractApplicationIds(body?.selectedApplicants);
-  for (const id of selectedApplicants) {
-    updates.push({ id, status: 'shortlisted' });
+  const selectedApplicants = extractApplicantsWithStatus(body?.selectedApplicants, 'shortlisted');
+  for (const item of selectedApplicants) {
+    updates.push(item);
   }
 
-  const rejectedApplicants = extractApplicationIds(body?.rejectedApplicants);
-  for (const id of rejectedApplicants) {
-    updates.push({ id, status: 'rejected' });
+  const flaggedApplicants = extractApplicantsWithStatus(body?.flaggedApplicants, 'flagged');
+  for (const item of flaggedApplicants) {
+    updates.push(item);
+  }
+
+  const rejectedApplicants = extractApplicantsWithStatus(body?.rejectedApplicants, 'rejected');
+  for (const item of rejectedApplicants) {
+    updates.push(item);
   }
 
   const sharedStatus = String(body?.status ?? '').trim();
   if (sharedStatus) {
     const applicationIds = extractApplicationIds(body?.application_ids ?? body?.applicationIds);
     for (const id of applicationIds) {
-      updates.push({ id, status: sharedStatus });
+      updates.push({ id, status: normalizeStatus(sharedStatus) });
     }
   }
 
