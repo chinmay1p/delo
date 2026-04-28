@@ -33,7 +33,7 @@ function extractApplicationIds(items) {
 function normalizeStatus(rawStatus) {
   const status = String(rawStatus ?? '').trim().toLowerCase();
   if (status === 'approved') {
-    return 'shortlisted';
+    return 'shortlisted2';
   }
   return status;
 }
